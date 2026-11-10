@@ -26,16 +26,7 @@
     </div>
   </header>
 
-  <section class="hero" aria-hidden="false">
-    <p data-i18n="hero">Self-monitoring prototype for crews on long missions: each person is compared with their own baseline, never diagnosed.</p>
-    <svg class="hero-art" viewBox="0 0 400 120" aria-hidden="true" focusable="false">
-      <defs><radialGradient id="pg" cx="0.5" cy="1" r="0.9"><stop offset="0" stop-color="#2b4f9e"/><stop offset="0.7" stop-color="#16264d"/><stop offset="1" stop-color="#0e1424" stop-opacity="0"/></radialGradient></defs>
-      <circle cx="300" cy="190" r="150" fill="url(#pg)"/>
-      <path d="M150 190 A150 150 0 0 1 450 190" fill="none" stroke="#6aa8ff" stroke-width="1.5" opacity="0.8"/>
-      <g fill="#e8edf7"><circle cx="30" cy="22" r="1.2"/><circle cx="90" cy="60" r="1"/><circle cx="140" cy="18" r="1.4"/><circle cx="200" cy="48" r="1"/><circle cx="250" cy="14" r="1.2"/><circle cx="360" cy="30" r="1.2"/><circle cx="60" cy="96" r="1"/><circle cx="330" cy="76" r="1"/></g>
-      <g transform="translate(262 52) rotate(-12)"><rect x="-10" y="-3" width="20" height="6" rx="1.5" fill="#d9e2f2"/><rect x="-24" y="-1.5" width="12" height="3" fill="#6aa8ff"/><rect x="12" y="-1.5" width="12" height="3" fill="#6aa8ff"/></g>
-    </svg>
-  </section>
+  <p class="tagline" data-i18n="hero">Self-monitoring prototype for crews on long missions: each person is compared with their own baseline, never diagnosed.</p>
 
   <div class="banner" role="note">
     <strong data-i18n="bannerStrong">Prototype — not a medical device.</strong>
@@ -49,72 +40,94 @@
   </nav>
 
   <div id="view-dash">
-  <div class="toolbar">
-    <div class="source-toggle" role="group" aria-label="Data source" data-i18n-aria="srcLabel">
-      <button id="btn-demo" class="seg active" aria-pressed="true" data-i18n="btnDemo">Simulated demo</button>
-      <button id="btn-manual" class="seg" aria-pressed="false" data-i18n="btnManual">My users</button>
-    </div>
-    <span id="source-badge" class="badge sim">DATA: SIMULATED (fictional)</span>
-  </div>
+  <main class="console">
+    <aside class="rail rail-left" aria-label="Users and data entry">
+      <div class="toolbar">
+        <div class="source-toggle" role="group" aria-label="Data source" data-i18n-aria="srcLabel">
+          <button id="btn-demo" class="seg active" aria-pressed="true" data-i18n="btnDemo">Simulated demo</button>
+          <button id="btn-manual" class="seg" aria-pressed="false" data-i18n="btnManual">My users</button>
+        </div>
+        <span id="source-badge" class="badge sim">DATA: SIMULATED (fictional)</span>
+      </div>
 
-  <main class="layout">
-    <section class="card" aria-labelledby="h-body">
+      <section class="card" aria-labelledby="h-users">
+        <h2 id="h-users" data-i18n="users.title">Users</h2>
+        <p class="hint" data-i18n="users.hint">Add each person (for example each team member), select them, then enter their values. Data stays in this browser.</p>
+        <p id="user-none" class="empty" data-i18n="users.none">No user yet. Add a user to start entering values.</p>
+        <div class="userbar">
+          <label class="grow"><span data-i18n="users.select">Selected user</span><select id="user-select"></select></label>
+          <button id="user-remove" class="ghost" type="button" data-i18n="users.remove">Remove user</button>
+        </div>
+        <form id="user-add" class="userbar" novalidate>
+          <label class="grow"><span data-i18n="users.new">New user name</span><input id="user-name" type="text" maxlength="30" autocomplete="off" data-i18n-ph="users.placeholder" placeholder="e.g. Student 1"></label>
+          <button class="primary" type="submit" data-i18n="users.add">Add user</button>
+        </form>
+        <div id="user-msg" role="status" class="form-msg"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-checkin">
+        <h2 id="h-checkin" data-i18n="checkin">Daily check-in</h2>
+        <p class="hint" data-i18n="checkinHint">Leave a field empty if you did not measure it. Entries are stored only in this browser.</p>
+        <form id="checkin" novalidate></form>
+        <div id="form-msg" role="alert" class="form-msg"></div>
+        <button id="clear-manual" class="link" type="button" data-i18n="clear">Delete my entries</button>
+      </section>
+    </aside>
+
+    <section class="stage" aria-labelledby="h-body">
       <h2 id="h-body" data-i18n="bodyMap">Body map</h2>
       <p class="hint" data-i18n="bodyHint">Select a region. Grey = not enough data or no indicator yet.</p>
-      <div id="overall" class="overall" aria-live="polite"></div>
       <div class="bodywrap">
-        <svg id="body" viewBox="0 0 220 440" role="group" aria-label="Clickable body map" data-i18n-aria="bodyAria">
+        <svg id="body" viewBox="0 0 440 452" role="group" aria-label="Clickable body map" data-i18n-aria="bodyAria">
+          <defs>
+            <radialGradient id="halo" cx="0.5" cy="0.45" r="0.55"><stop offset="0" stop-color="#7cc4ff" stop-opacity="0.16"/><stop offset="1" stop-color="#7cc4ff" stop-opacity="0"/></radialGradient>
+            <linearGradient id="scanfade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7cc4ff" stop-opacity="0"/><stop offset="0.5" stop-color="#7cc4ff" stop-opacity="0.9"/><stop offset="1" stop-color="#7cc4ff" stop-opacity="0"/></linearGradient>
+          </defs>
+          <ellipse class="deco" cx="220" cy="210" rx="210" ry="215" fill="url(#halo)"/>
+          <ellipse class="plinth deco" cx="220" cy="436" rx="78" ry="9"/>
+          <g class="silhouette" transform="translate(110 0)" aria-hidden="true">
+            <path d="M78 104 Q110 98 142 104 L150 150 L142 232 L78 232 L70 150 Z"/>
+          </g>
           <g class="region" data-region="mind" tabindex="0" role="button" aria-label="Mind and sleep">
-            <circle cx="110" cy="48" r="32"></circle>
+            <circle class="zone" transform="translate(110 0)" cx="110" cy="48" r="32"></circle>
+            <line class="lead" x1="220" y1="48" x2="312" y2="48"/><circle class="dot" cx="220" cy="48" r="3"/><text class="lbl" x="318" y="52" text-anchor="start" data-i18n="region.mind.title">region.mind.title</text>
           </g>
           <g class="region" data-region="immune" tabindex="0" role="button" aria-label="Immune system">
-            <rect x="82" y="88" width="56" height="16" rx="8"></rect>
+            <rect class="zone" transform="translate(110 0)" x="82" y="88" width="56" height="16" rx="8"></rect>
+            <line class="lead" x1="220" y1="96" x2="128" y2="96"/><circle class="dot" cx="220" cy="96" r="3"/><text class="lbl" x="122" y="100" text-anchor="end" data-i18n="region.immune.title">region.immune.title</text>
           </g>
           <g class="region" data-region="heart" tabindex="0" role="button" aria-label="Heart and circulation">
-            <path d="M110 150 C80 122 78 106 96 106 C104 106 110 112 110 118 C110 112 116 106 124 106 C142 106 140 122 110 150 Z"></path>
+            <path class="zone" transform="translate(110 0)" d="M110 150 C80 122 78 106 96 106 C104 106 110 112 110 118 C110 112 116 106 124 106 C142 106 140 122 110 150 Z"></path>
+            <line class="lead" x1="220" y1="128" x2="312" y2="128"/><circle class="dot" cx="220" cy="128" r="3"/><text class="lbl" x="318" y="132" text-anchor="start" data-i18n="region.heart.title">region.heart.title</text>
           </g>
           <g class="region" data-region="metabolism" tabindex="0" role="button" aria-label="Metabolism">
-            <ellipse cx="110" cy="195" rx="34" ry="32"></ellipse>
+            <ellipse class="zone" transform="translate(110 0)" cx="110" cy="195" rx="34" ry="32"></ellipse>
+            <line class="lead" x1="220" y1="195" x2="128" y2="195"/><circle class="dot" cx="220" cy="195" r="3"/><text class="lbl" x="122" y="199" text-anchor="end" data-i18n="region.metabolism.title">region.metabolism.title</text>
           </g>
           <g class="region" data-region="whole" tabindex="0" role="button" aria-label="Whole body temperature">
-            <path d="M70 102 L40 112 L26 214 L44 218 L58 140 M150 102 L180 112 L194 214 L176 218 L162 140 M84 232 L136 232 L140 300 L80 300 Z"></path>
+            <path class="zone" transform="translate(110 0)" d="M70 102 L40 112 L26 214 L44 218 L58 140 M150 102 L180 112 L194 214 L176 218 L162 140 M84 232 L136 232 L140 300 L80 300 Z"></path>
+            <line class="lead" x1="220" y1="266" x2="128" y2="266"/><circle class="dot" cx="220" cy="266" r="3"/><text class="lbl" x="122" y="270" text-anchor="end" data-i18n="region.whole.title">region.whole.title</text>
           </g>
           <g class="region" data-region="bones" tabindex="0" role="button" aria-label="Bones and muscle">
-            <path d="M82 304 L106 304 L102 420 L80 420 Z M114 304 L138 304 L140 420 L118 420 Z"></path>
+            <path class="zone" transform="translate(110 0)" d="M82 304 L106 304 L102 420 L80 420 Z M114 304 L138 304 L140 420 L118 420 Z"></path>
+            <line class="lead" x1="237" y1="360" x2="312" y2="360"/><circle class="dot" cx="237" cy="360" r="3"/><text class="lbl" x="318" y="364" text-anchor="start" data-i18n="region.bones.title">region.bones.title</text>
           </g>
-          <text x="110" y="436" text-anchor="middle" class="svg-note" data-i18n="schematic">Schematic only</text>
+          <rect class="scan" x="110" y="0" width="220" height="2" fill="url(#scanfade)" aria-hidden="true"/>
+          <text x="220" y="450" text-anchor="middle" class="svg-note" data-i18n="schematic">Schematic only</text>
         </svg>
         <ul id="region-list" class="region-list"></ul>
       </div>
     </section>
 
-    <section class="card detail" aria-labelledby="h-detail" aria-live="polite">
-      <h2 id="h-detail" data-i18n="details">Details</h2>
-      <div id="detail"><p class="hint">Select a body region to see its indicators.</p></div>
-    </section>
-
-    <section class="card" aria-labelledby="h-users">
-      <h2 id="h-users" data-i18n="users.title">Users</h2>
-      <p class="hint" data-i18n="users.hint">Add each person (for example each team member), select them, then enter their values. Data stays in this browser.</p>
-      <p id="user-none" class="empty" data-i18n="users.none">No user yet. Add a user to start entering values.</p>
-      <div class="userbar">
-        <label class="grow"><span data-i18n="users.select">Selected user</span><select id="user-select"></select></label>
-        <button id="user-remove" class="ghost" type="button" data-i18n="users.remove">Remove user</button>
-      </div>
-      <form id="user-add" class="userbar" novalidate>
-        <label class="grow"><span data-i18n="users.new">New user name</span><input id="user-name" type="text" maxlength="30" autocomplete="off" data-i18n-ph="users.placeholder" placeholder="e.g. Student 1"></label>
-        <button class="primary" type="submit" data-i18n="users.add">Add user</button>
-      </form>
-      <div id="user-msg" role="status" class="form-msg"></div>
-    </section>
-
-    <section class="card" aria-labelledby="h-checkin">
-      <h2 id="h-checkin" data-i18n="checkin">Daily check-in</h2>
-      <p class="hint" data-i18n="checkinHint">Leave a field empty if you did not measure it. Entries are stored only in this browser.</p>
-      <form id="checkin" novalidate></form>
-      <div id="form-msg" role="alert" class="form-msg"></div>
-      <button id="clear-manual" class="link" type="button" data-i18n="clear">Delete my entries</button>
-    </section>
+    <aside class="rail rail-right" aria-label="Analysis">
+      <section class="card summary" aria-live="polite">
+        <div id="overall" class="overall"></div>
+      </section>
+      <section class="card detail" aria-labelledby="h-detail" aria-live="polite">
+        <h2 id="h-detail" data-i18n="details">Details</h2>
+        <div id="detail"><p class="hint">Select a body region to see its indicators.</p></div>
+      </section>
+    </aside>
   </main>
   </div>
 
