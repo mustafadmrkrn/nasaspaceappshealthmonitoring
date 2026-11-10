@@ -76,3 +76,7 @@ form#checkin button { grid-column: 1 / -1; background: var(--accent); color: #07
 .form-msg.good { color: var(--ok); }
 .link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; font-size: .82rem; padding: 0; margin-top: .5rem; }
 footer { padding: 0 1.25rem 2rem; color: var(--muted); font-size: .8rem; }
+
+.top-right { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.lang select { background: #101830; color: inherit; border: 1px solid var(--line); border-radius: 8px; padding: .4rem .5rem; font: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
