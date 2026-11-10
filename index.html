@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Astronaut Self-Assessment Panel — NASA Space Apps 2026 prototype</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Astronaut Self-Assessment Panel</h1>
+      <p class="sub">NASA Space Apps Challenge 2026 · prototype</p>
+    </div>
+    <div class="source-toggle" role="group" aria-label="Data source">
+      <button id="btn-demo" class="seg active" aria-pressed="true">Simulated demo</button>
+      <button id="btn-manual" class="seg" aria-pressed="false">My entries</button>
+    </div>
+  </header>
+
+  <div class="banner" role="note">
+    <strong>Prototype — not a medical device.</strong>
+    Nothing here is a diagnosis or treatment advice. Statuses are statistical comparisons with your own baseline.
+    <span id="source-badge" class="badge sim">DATA: SIMULATED (fictional)</span>
+  </div>
+
+  <main class="layout">
+    <section class="card" aria-labelledby="h-body">
+      <h2 id="h-body">Body map</h2>
+      <p class="hint">Select a region. Grey = not enough data or no indicator yet.</p>
+      <div id="overall" class="overall" aria-live="polite"></div>
+      <div class="bodywrap">
+        <svg id="body" viewBox="0 0 220 440" role="group" aria-label="Clickable body map">
+          <g class="region" data-region="mind" tabindex="0" role="button" aria-label="Mind and sleep">
+            <circle cx="110" cy="48" r="32"></circle>
+          </g>
+          <g class="region" data-region="immune" tabindex="0" role="button" aria-label="Immune system">
+            <rect x="82" y="88" width="56" height="16" rx="8"></rect>
+          </g>
+          <g class="region" data-region="heart" tabindex="0" role="button" aria-label="Heart and circulation">
+            <path d="M110 150 C80 122 78 106 96 106 C104 106 110 112 110 118 C110 112 116 106 124 106 C142 106 140 122 110 150 Z"></path>
+          </g>
+          <g class="region" data-region="metabolism" tabindex="0" role="button" aria-label="Metabolism">
+            <ellipse cx="110" cy="195" rx="34" ry="32"></ellipse>
+          </g>
+          <g class="region" data-region="whole" tabindex="0" role="button" aria-label="Whole body temperature">
+            <path d="M70 102 L40 112 L26 214 L44 218 L58 140 M150 102 L180 112 L194 214 L176 218 L162 140 M84 232 L136 232 L140 300 L80 300 Z"></path>
+          </g>
+          <g class="region" data-region="bones" tabindex="0" role="button" aria-label="Bones and muscle">
+            <path d="M82 304 L106 304 L102 420 L80 420 Z M114 304 L138 304 L140 420 L118 420 Z"></path>
+          </g>
+          <text x="110" y="436" text-anchor="middle" class="svg-note">Schematic only</text>
+        </svg>
+        <ul id="region-list" class="region-list"></ul>
+      </div>
+    </section>
+
+    <section class="card detail" aria-labelledby="h-detail" aria-live="polite">
+      <h2 id="h-detail">Details</h2>
+      <div id="detail"><p class="hint">Select a body region to see its indicators.</p></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-checkin">
+      <h2 id="h-checkin">Daily check-in</h2>
+      <p class="hint">Leave a field empty if you did not measure it. Entries are stored only in this browser.</p>
+      <form id="checkin" novalidate></form>
+      <div id="form-msg" role="alert" class="form-msg"></div>
+      <button id="clear-manual" class="link" type="button">Delete my entries</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>Draft explanatory texts are not yet verified against NASA HRP sources. Simulated data uses arbitrary, fictional parameters.
+       Status levels use configurable statistical cut-offs (|z| ≥ 2 and ≥ 3 relative to your first 7 readings), not clinical thresholds.</p>
+  </footer>
+
+  <script src="js/core.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
