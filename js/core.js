@@ -55,9 +55,11 @@
   /** Validate one raw check-in. Missing indicator values are allowed; invalid ones are errors. */
   function validateEntry(raw) {
     var errors = [];
+    var codes = []; // language-independent error descriptors for the UI: {code, id, ...}
+    function fail(text, descriptor) { errors.push(text); codes.push(descriptor); }
     var entry = { date: null };
     if (!raw || typeof raw.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.date)) {
-      errors.push('A valid date (YYYY-MM-DD) is required.');
+      fail('A valid date (YYYY-MM-DD) is required.', { code: 'date' });
     } else {
       entry.date = raw.date;
     }
@@ -66,20 +68,21 @@
       var v = raw ? raw[ind.id] : undefined;
       if (v === undefined || v === null || v === '') return; // missing is allowed
       var n = typeof v === 'number' ? v : Number(String(v).replace(',', '.'));
-      if (!isNum(n)) { errors.push(ind.label + ': not a number.'); return; }
+      if (!isNum(n)) { fail(ind.label + ': not a number.', { code: 'notnum', id: ind.id }); return; }
       if (n < ind.min || n > ind.max) {
-        errors.push(ind.label + ': ' + n + ' is outside the input sanity limits (' + ind.min + '–' + ind.max + ' ' + ind.unit + ').');
+        fail(ind.label + ': ' + n + ' is outside the input sanity limits (' + ind.min + '–' + ind.max + ' ' + ind.unit + ').',
+          { code: 'range', id: ind.id, n: n, min: ind.min, max: ind.max });
         return;
       }
-      if (ind.integer && Math.floor(n) !== n) { errors.push(ind.label + ': must be a whole number.'); return; }
+      if (ind.integer && Math.floor(n) !== n) { fail(ind.label + ': must be a whole number.', { code: 'integer', id: ind.id }); return; }
       entry[ind.id] = n;
       count++;
     });
-    if (count === 0) errors.push('Enter at least one measurement.');
+    if (count === 0) fail('Enter at least one measurement.', { code: 'empty' });
     if (isNum(entry.sys) && isNum(entry.dia) && entry.dia >= entry.sys) {
-      errors.push('Diastolic pressure must be lower than systolic pressure.');
+      fail('Diastolic pressure must be lower than systolic pressure.', { code: 'bp' });
     }
-    return { ok: errors.length === 0, errors: errors, entry: errors.length === 0 ? entry : null };
+    return { ok: errors.length === 0, errors: errors, codes: codes, entry: errors.length === 0 ? entry : null };
   }
 
   /** Time-ordered list of valid values for one indicator: [{date, value}] */
@@ -101,16 +104,19 @@
 
     var v = values.filter(isNum);
     if (v.length < c.baselineN) {
-      return { status: 'nodata', reason: 'Collecting baseline: ' + v.length + '/' + c.baselineN + ' readings.', n: v.length };
+      return { status: 'nodata', reason: 'Collecting baseline: ' + v.length + '/' + c.baselineN + ' readings.',
+        reasonCode: 'collecting', reasonParams: { have: v.length, need: c.baselineN }, n: v.length };
     }
     var base = v.slice(0, c.baselineN);
     var mu = mean(base), s = sd(base);
     var after = v.slice(c.baselineN);
     if (after.length === 0) {
-      return { status: 'nodata', reason: 'Baseline complete; no readings after the baseline yet.', n: v.length, baseline: { mean: mu, sd: s, n: base.length } };
+      return { status: 'nodata', reason: 'Baseline complete; no readings after the baseline yet.', reasonCode: 'baselineDone',
+        n: v.length, baseline: { mean: mu, sd: s, n: base.length } };
     }
     if (!(s > 0)) {
-      return { status: 'nodata', reason: 'Baseline shows no variation; deviation cannot be estimated.', n: v.length, baseline: { mean: mu, sd: s, n: base.length } };
+      return { status: 'nodata', reason: 'Baseline shows no variation; deviation cannot be estimated.', reasonCode: 'flat',
+        n: v.length, baseline: { mean: mu, sd: s, n: base.length } };
     }
     var recent = after.slice(-c.recentN);
     var rm = mean(recent);
