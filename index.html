@@ -8,22 +8,52 @@
 </head>
 <body>
   <header class="top">
-    <div>
-      <h1 data-i18n="appTitle">Astronaut Self-Assessment Panel</h1>
-      <p class="sub" data-i18n="appSub">NASA Space Apps Challenge 2026 · prototype</p>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6aa8ff"/><stop offset="1" stop-color="#3ecf8e"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="21" fill="none" stroke="url(#lg)" stroke-width="3"/>
+        <ellipse cx="24" cy="24" rx="21" ry="8" fill="none" stroke="#9aa6c2" stroke-width="1.5" transform="rotate(-25 24 24)"/>
+        <circle cx="24" cy="24" r="5" fill="url(#lg)"/>
+        <circle cx="41" cy="15" r="2.6" fill="#e8edf7"/>
+      </svg>
+      <div>
+        <h1 data-i18n="appTitle">Astronaut Self-Assessment Panel</h1>
+        <p class="sub" data-i18n="appSub">NASA Space Apps Challenge 2026 · prototype</p>
+      </div>
     </div>
     <div class="top-right">
       <label class="lang"><span class="sr-only" data-i18n="langLabel">Language</span><select id="lang"></select></label>
-      <div class="source-toggle" role="group" aria-label="Data source" data-i18n-aria="srcLabel">
-        <button id="btn-demo" class="seg active" aria-pressed="true" data-i18n="btnDemo">Simulated demo</button>
-        <button id="btn-manual" class="seg" aria-pressed="false" data-i18n="btnManual">My entries</button>
-      </div>
     </div>
   </header>
+
+  <section class="hero" aria-hidden="false">
+    <p data-i18n="hero">Self-monitoring prototype for crews on long missions: each person is compared with their own baseline, never diagnosed.</p>
+    <svg class="hero-art" viewBox="0 0 400 120" aria-hidden="true" focusable="false">
+      <defs><radialGradient id="pg" cx="0.5" cy="1" r="0.9"><stop offset="0" stop-color="#2b4f9e"/><stop offset="0.7" stop-color="#16264d"/><stop offset="1" stop-color="#0e1424" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="300" cy="190" r="150" fill="url(#pg)"/>
+      <path d="M150 190 A150 150 0 0 1 450 190" fill="none" stroke="#6aa8ff" stroke-width="1.5" opacity="0.8"/>
+      <g fill="#e8edf7"><circle cx="30" cy="22" r="1.2"/><circle cx="90" cy="60" r="1"/><circle cx="140" cy="18" r="1.4"/><circle cx="200" cy="48" r="1"/><circle cx="250" cy="14" r="1.2"/><circle cx="360" cy="30" r="1.2"/><circle cx="60" cy="96" r="1"/><circle cx="330" cy="76" r="1"/></g>
+      <g transform="translate(262 52) rotate(-12)"><rect x="-10" y="-3" width="20" height="6" rx="1.5" fill="#d9e2f2"/><rect x="-24" y="-1.5" width="12" height="3" fill="#6aa8ff"/><rect x="12" y="-1.5" width="12" height="3" fill="#6aa8ff"/></g>
+    </svg>
+  </section>
 
   <div class="banner" role="note">
     <strong data-i18n="bannerStrong">Prototype — not a medical device.</strong>
     <span data-i18n="bannerText">Nothing here is a diagnosis or treatment advice. Statuses are statistical comparisons with your own baseline.</span>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" role="tab" aria-selected="true" data-tab="dash" data-i18n="tabDash">Dashboard</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="compare" data-i18n="tabCompare">Compare users</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="osdr" data-i18n="tabOsdr">Real data (NASA OSDR)</button>
+  </nav>
+
+  <div id="view-dash">
+  <div class="toolbar">
+    <div class="source-toggle" role="group" aria-label="Data source" data-i18n-aria="srcLabel">
+      <button id="btn-demo" class="seg active" aria-pressed="true" data-i18n="btnDemo">Simulated demo</button>
+      <button id="btn-manual" class="seg" aria-pressed="false" data-i18n="btnManual">My users</button>
+    </div>
     <span id="source-badge" class="badge sim">DATA: SIMULATED (fictional)</span>
   </div>
 
@@ -63,6 +93,21 @@
       <div id="detail"><p class="hint">Select a body region to see its indicators.</p></div>
     </section>
 
+    <section class="card" aria-labelledby="h-users">
+      <h2 id="h-users" data-i18n="users.title">Users</h2>
+      <p class="hint" data-i18n="users.hint">Add each person (for example each team member), select them, then enter their values. Data stays in this browser.</p>
+      <p id="user-none" class="empty" data-i18n="users.none">No user yet. Add a user to start entering values.</p>
+      <div class="userbar">
+        <label class="grow"><span data-i18n="users.select">Selected user</span><select id="user-select"></select></label>
+        <button id="user-remove" class="ghost" type="button" data-i18n="users.remove">Remove user</button>
+      </div>
+      <form id="user-add" class="userbar" novalidate>
+        <label class="grow"><span data-i18n="users.new">New user name</span><input id="user-name" type="text" maxlength="30" autocomplete="off" data-i18n-ph="users.placeholder" placeholder="e.g. Student 1"></label>
+        <button class="primary" type="submit" data-i18n="users.add">Add user</button>
+      </form>
+      <div id="user-msg" role="status" class="form-msg"></div>
+    </section>
+
     <section class="card" aria-labelledby="h-checkin">
       <h2 id="h-checkin" data-i18n="checkin">Daily check-in</h2>
       <p class="hint" data-i18n="checkinHint">Leave a field empty if you did not measure it. Entries are stored only in this browser.</p>
@@ -71,6 +116,10 @@
       <button id="clear-manual" class="link" type="button" data-i18n="clear">Delete my entries</button>
     </section>
   </main>
+  </div>
+
+  <div id="view-compare" hidden><div class="layout1"><section class="card" id="cmp"></section></div></div>
+  <div id="view-osdr" hidden><div class="layout1"><section class="card" id="osdr"></section></div></div>
 
   <footer>
     <p data-i18n="footer">Draft explanatory texts are not yet verified against NASA HRP sources. Simulated data uses arbitrary, fictional parameters.
@@ -79,8 +128,12 @@
 
   <script src="js/i18n.js"></script>
   <script src="js/core.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/osdr.js"></script>
+  <script src="js/charts.js"></script>
   <script src="js/demo.js"></script>
   <script src="js/content.js"></script>
+  <script src="js/views.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
