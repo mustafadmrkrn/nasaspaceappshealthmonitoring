@@ -44,4 +44,13 @@ test('core error codes are all translatable', () => {
   assert.ok(v.codes && v.codes.length >= 3);
   v.codes.forEach(c => assert.ok(I18n.DICT.en['err.' + c.code], c.code));
 });
+test('keys used by users / compare / OSDR views exist in every language', () => {
+  const Osdr = require('../js/osdr.js');
+  codes.forEach(c => {
+    const D = I18n.DICT[c];
+    Object.keys(Osdr.ANALYTES).forEach(a => assert.ok(D['osdr.a.' + a], c + ' analyte ' + a));
+    ['empty', 'dup', 'max'].forEach(e => assert.ok(D['users.err.' + e], c + ' users.err.' + e));
+    ['tabDash', 'tabCompare', 'tabOsdr', 'users.legacyName', 'osdr.low', 'osdr.high', 'osdr.out'].forEach(k => assert.ok(D[k], c + ' ' + k));
+  });
+});
 console.log(n + ' i18n tests passed');
