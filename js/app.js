@@ -2,23 +2,19 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'sa_manual_entries_v1';
   var ICON = { ok: '✓', watch: '!', attention: '▲', nodata: '–' };
   var t = I18n.t;
 
-  var state = { mode: 'demo', region: null, manual: loadManual(), demo: Demo.generate(2026, 30) };
-  var memoryFallback = null;
+  var state = { tab: 'dash', mode: 'demo', region: null, demo: Demo.generate(2026, 30) };
+  var store = null; // created in init(), after the language is known
 
-  function loadManual() {
-    try {
-      var raw = window.localStorage.getItem(STORAGE_KEY);
-      var arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch (e) { return []; }
-  }
-  function saveManual() {
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.manual)); }
-    catch (e) { memoryFallback = state.manual; /* storage blocked: keep in memory for this session */ }
+  // localStorage that never throws (blocked storage -> data lives in memory for this page view)
+  function safeStorage() {
+    var mem = {};
+    return {
+      getItem: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; } },
+      setItem: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) { mem[k] = v; } }
+    };
   }
 
   function el(tag, attrs, children) {
@@ -36,7 +32,7 @@
   function unitOf(ind) { return ind.unit === 'pts' ? t('unit.pts') : ind.unit === 'h' ? t('unit.h') : ind.unit; }
   function fmt(x, ind) { return typeof x === 'number' ? (ind && ind.step < 1 ? x.toFixed(1) : String(Math.round(x * 10) / 10)) : '—'; }
 
-  function entries() { return state.mode === 'demo' ? state.demo : state.manual; }
+  function entries() { return state.mode === 'demo' ? state.demo : store.entriesOf(store.current()); }
 
   function chip(status) {
     return el('span', { class: 'chip ' + status }, [ICON[status] + ' ' + t('status.' + status)]);
@@ -172,7 +168,11 @@
   function renderBadge() {
     var b = $('source-badge');
     if (state.mode === 'demo') { b.className = 'badge sim'; b.textContent = t('badgeSim'); }
-    else { b.className = 'badge man'; b.textContent = t('badgeMan', { n: state.manual.length }); }
+    else {
+      var u = store.currentUser();
+      b.className = 'badge man';
+      b.textContent = u ? t('badgeMan', { user: u.name, n: u.entries.length }) : t('users.none');
+    }
     $('btn-demo').classList.toggle('active', state.mode === 'demo');
     $('btn-demo').setAttribute('aria-pressed', String(state.mode === 'demo'));
     $('btn-manual').classList.toggle('active', state.mode === 'manual');
@@ -182,6 +182,7 @@
   function applyStatic() {
     document.title = t('docTitle');
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (n) { n.textContent = t(n.getAttribute('data-i18n')); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-ph]'), function (n) { n.setAttribute('placeholder', t(n.getAttribute('data-i18n-ph'))); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-aria]'), function (n) { n.setAttribute('aria-label', t(n.getAttribute('data-i18n-aria'))); });
     Array.prototype.forEach.call(document.querySelectorAll('#body .region'), function (g) {
       g.setAttribute('aria-label', t('region.' + g.getAttribute('data-region') + '.title'));
@@ -189,11 +190,46 @@
     var sel = $('lang'); if (sel) sel.value = I18n.get();
   }
 
+  var viewCtx = null;
+  function ctx() {
+    if (!viewCtx) viewCtx = { t: t, Core: Core, Osdr: Osdr, store: store, chip: chip, indLabel: indLabel, unitOf: unitOf, fmt: fmt };
+    return viewCtx;
+  }
+
+  function renderTabs() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) {
+      var on = b.getAttribute('data-tab') === state.tab;
+      b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on));
+    });
+    ['dash', 'compare', 'osdr'].forEach(function (id) { $('view-' + id).hidden = state.tab !== id; });
+  }
+
   function render() {
     assessment = Core.assess(entries());
     applyStatic(); updateFormLabels();
+    renderTabs(); renderUsers();
     renderBadge(); renderOverall(); renderBody(); renderDetail();
+    if (state.tab === 'compare') Views.renderCompare(ctx(), $('cmp'));
+    if (state.tab === 'osdr') Views.renderOsdr(ctx(), $('osdr'));
   }
+
+  /* ---------- users ---------- */
+  function renderUsers() {
+    var sel = $('user-select'), users = store.users();
+    sel.innerHTML = '';
+    users.forEach(function (u) {
+      var o = el('option', { value: u.id, text: u.name });
+      if (u.id === store.current()) o.selected = true;
+      sel.appendChild(o);
+    });
+    var none = !users.length;
+    sel.disabled = none; $('user-remove').disabled = none;
+    $('user-none').hidden = !none;
+    Array.prototype.forEach.call($('checkin').querySelectorAll('input,button'), function (x) { x.disabled = none; });
+    $('clear-manual').disabled = none;
+  }
+
+  function userMsg(text, cls) { var m = $('user-msg'); m.className = 'form-msg ' + (cls || ''); m.textContent = text; }
 
   function selectRegion(id) { state.region = id; renderBody(); renderDetail(); }
 
@@ -227,11 +263,9 @@
       var raw = {};
       Array.prototype.forEach.call(f.elements, function (inp) { if (inp.name) raw[inp.name] = inp.value; });
       var v = Core.validateEntry(raw), msg = $('form-msg');
+      if (!store.current()) { msg.className = 'form-msg err'; msg.textContent = t('users.needUser'); return; }
       if (!v.ok) { msg.className = 'form-msg err'; msg.textContent = errText(v); return; }
-      // one entry per date: replace if it exists
-      state.manual = state.manual.filter(function (e) { return e.date !== v.entry.date; });
-      state.manual.push(v.entry);
-      saveManual();
+      store.saveEntry(store.current(), v.entry); // one entry per date: replaced if it exists
       msg.className = 'form-msg good'; msg.textContent = t('savedFor', { date: v.entry.date });
       state.mode = 'manual'; render();
     });
@@ -239,15 +273,33 @@
 
   function init() {
     I18n.init();
+    store = Store.create(safeStorage(), { legacyName: t('users.legacyName') });
     var sel = $('lang');
     I18n.LANGS.forEach(function (l) { sel.appendChild(el('option', { value: l.code, text: l.name })); });
     sel.addEventListener('change', function () { I18n.set(sel.value); $('form-msg').textContent = ''; render(); });
     buildForm();
     $('btn-demo').addEventListener('click', function () { state.mode = 'demo'; render(); });
     $('btn-manual').addEventListener('click', function () { state.mode = 'manual'; render(); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (b) {
+      b.addEventListener('click', function () { state.tab = b.getAttribute('data-tab'); render(); });
+    });
+    $('user-select').addEventListener('change', function () { store.select($('user-select').value); userMsg(''); state.mode = 'manual'; render(); });
+    $('user-add').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var r = store.add($('user-name').value);
+      if (!r.ok) { userMsg(t('users.err.' + r.code, { max: r.max }), 'err'); return; }
+      $('user-name').value = '';
+      userMsg(t('users.added', { user: r.user.name }), 'good');
+      state.mode = 'manual'; render();
+    });
+    $('user-remove').addEventListener('click', function () {
+      var u = store.currentUser(); if (!u) return;
+      if (window.confirm(t('users.confirmRemove', { user: u.name }))) { store.remove(u.id); userMsg(''); render(); }
+    });
     $('clear-manual').addEventListener('click', function () {
-      if (!state.manual.length) return;
-      if (window.confirm(t('confirmClear'))) { state.manual = []; saveManual(); render(); }
+      var u = store.currentUser();
+      if (!u || !u.entries.length) return;
+      if (window.confirm(t('confirmClear', { user: u.name }))) { store.clearEntries(u.id); render(); }
     });
     Array.prototype.forEach.call(document.querySelectorAll('#body .region'), function (g) {
       var id = g.getAttribute('data-region');
