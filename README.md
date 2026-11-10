@@ -25,9 +25,29 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 ```bash
 node tests/core.test.js       # no dependencies
+node tests/i18n.test.js       # translation completeness
 ```
 
 Covers baseline/deviation logic, edge cases (too few readings, zero variance, missing values), input validation and the simulated scenario.
+
+## Languages
+English, Türkçe, Italiano, Español (selector in the header; choice saved in this browser; default from browser language).
+Translations are machine-assisted drafts and have **not** been reviewed by native-speaking or medical translators.
+
+## How measurements get into the app, and how they are taken in space
+**This prototype does not connect to any device.** Values are typed in by hand ("My entries") or come from fictional simulated data.
+
+Sourced facts about spaceflight measurement (public NASA/CSA/JAXA material):
+- ISS blood-pressure/ECG kit measures ECG, heart rate and blood pressure: https://ntrs.nasa.gov/api/citations/20190000238
+- Medical Diagnostics Pack (BP cuffs, stethoscope, tonometer): https://ntrs.nasa.gov/api/citations/20110011351
+- Crew take blood pressure with cuffs; data is downlinked to flight surgeons: NASA ISS blog, 2026-07-08
+- CSA Bio-Monitor smart shirt (ECG/heart rate, blood pressure, respiration, SpO2, skin temperature, activity): https://www.asc-csa.gc.ca/eng/sciences/bio-monitor.asp
+- Sleep: wrist accelerometer (Actiwatch) plus daily subjective sleep logs: https://ntrs.nasa.gov/api/citations/20090014820
+- Ultrasound with remote guidance from the ground (ADUM): https://iss.jaxa.jp (ultrasound page)
+- Communication delay limits remote guidance on far missions, motivating autonomous tools: https://ntrs.nasa.gov/citations/20240004905
+
+**Not verified:** in-flight glucose meter and thermometer specifics; there is no objective mood instrument (mood is self-report here).
+Possible future step (proposal, not implemented): import of readings from a wearable/device file.
 
 ## Scientific status and limitations (please read)
 
@@ -36,7 +56,7 @@ Covers baseline/deviation logic, edge cases (too few readings, zero variance, mi
 | Challenge requirements | Taken from the official challenge page text (Intermediate, Human Exploration / Software / Space Exploration). |
 | Status levels | **Statistical deviation from the user's own baseline** (|z| ≥ 2 = Watch, ≥ 3 = Attention). These cut-offs are configurable conventions, **not clinical thresholds**. |
 | Input limits | Only reject physically impossible typing errors; they are not normal ranges. |
-| Explanatory texts (`js/content.js`) | **Draft. Not yet verified against NASA HRP sources.** Marked in the UI. |
+| Explanatory texts (`js/i18n.js`, keys `info.*`, `region.*`, `msg.*`) | **Draft. Not yet verified against NASA HRP sources.** Marked in the UI. |
 | Indicator → hazard mapping | **Proposed mapping, unverified.** |
 | Demo data (`js/demo.js`) | **Entirely fictional**, arbitrary parameters, makes no claim about real physiology. |
 | No clinical reference ranges | None are used yet. If added, each needs population, units and a cited source, and must be labelled as terrestrial if it is not spaceflight-specific. |
@@ -50,9 +70,11 @@ index.html          page
 css/style.css       styles
 js/core.js          pure logic: validation, baseline, status (tested)
 js/demo.js          simulated data generator (fictional)
-js/content.js       draft explanatory texts
+js/i18n.js          UI texts: English (source), Türkçe, Italiano, Español
+js/content.js       region -> indicator / hazard structure
 js/app.js           UI wiring
-tests/core.test.js  unit tests
+tests/core.test.js  unit tests (logic)
+tests/i18n.test.js  unit tests (translations)
 ```
 
 ## Next steps
