@@ -9,28 +9,31 @@
 <body>
   <header class="top">
     <div>
-      <h1>Astronaut Self-Assessment Panel</h1>
-      <p class="sub">NASA Space Apps Challenge 2026 · prototype</p>
+      <h1 data-i18n="appTitle">Astronaut Self-Assessment Panel</h1>
+      <p class="sub" data-i18n="appSub">NASA Space Apps Challenge 2026 · prototype</p>
     </div>
-    <div class="source-toggle" role="group" aria-label="Data source">
-      <button id="btn-demo" class="seg active" aria-pressed="true">Simulated demo</button>
-      <button id="btn-manual" class="seg" aria-pressed="false">My entries</button>
+    <div class="top-right">
+      <label class="lang"><span class="sr-only" data-i18n="langLabel">Language</span><select id="lang"></select></label>
+      <div class="source-toggle" role="group" aria-label="Data source" data-i18n-aria="srcLabel">
+        <button id="btn-demo" class="seg active" aria-pressed="true" data-i18n="btnDemo">Simulated demo</button>
+        <button id="btn-manual" class="seg" aria-pressed="false" data-i18n="btnManual">My entries</button>
+      </div>
     </div>
   </header>
 
   <div class="banner" role="note">
-    <strong>Prototype — not a medical device.</strong>
-    Nothing here is a diagnosis or treatment advice. Statuses are statistical comparisons with your own baseline.
+    <strong data-i18n="bannerStrong">Prototype — not a medical device.</strong>
+    <span data-i18n="bannerText">Nothing here is a diagnosis or treatment advice. Statuses are statistical comparisons with your own baseline.</span>
     <span id="source-badge" class="badge sim">DATA: SIMULATED (fictional)</span>
   </div>
 
   <main class="layout">
     <section class="card" aria-labelledby="h-body">
-      <h2 id="h-body">Body map</h2>
-      <p class="hint">Select a region. Grey = not enough data or no indicator yet.</p>
+      <h2 id="h-body" data-i18n="bodyMap">Body map</h2>
+      <p class="hint" data-i18n="bodyHint">Select a region. Grey = not enough data or no indicator yet.</p>
       <div id="overall" class="overall" aria-live="polite"></div>
       <div class="bodywrap">
-        <svg id="body" viewBox="0 0 220 440" role="group" aria-label="Clickable body map">
+        <svg id="body" viewBox="0 0 220 440" role="group" aria-label="Clickable body map" data-i18n-aria="bodyAria">
           <g class="region" data-region="mind" tabindex="0" role="button" aria-label="Mind and sleep">
             <circle cx="110" cy="48" r="32"></circle>
           </g>
@@ -49,31 +52,32 @@
           <g class="region" data-region="bones" tabindex="0" role="button" aria-label="Bones and muscle">
             <path d="M82 304 L106 304 L102 420 L80 420 Z M114 304 L138 304 L140 420 L118 420 Z"></path>
           </g>
-          <text x="110" y="436" text-anchor="middle" class="svg-note">Schematic only</text>
+          <text x="110" y="436" text-anchor="middle" class="svg-note" data-i18n="schematic">Schematic only</text>
         </svg>
         <ul id="region-list" class="region-list"></ul>
       </div>
     </section>
 
     <section class="card detail" aria-labelledby="h-detail" aria-live="polite">
-      <h2 id="h-detail">Details</h2>
+      <h2 id="h-detail" data-i18n="details">Details</h2>
       <div id="detail"><p class="hint">Select a body region to see its indicators.</p></div>
     </section>
 
     <section class="card" aria-labelledby="h-checkin">
-      <h2 id="h-checkin">Daily check-in</h2>
-      <p class="hint">Leave a field empty if you did not measure it. Entries are stored only in this browser.</p>
+      <h2 id="h-checkin" data-i18n="checkin">Daily check-in</h2>
+      <p class="hint" data-i18n="checkinHint">Leave a field empty if you did not measure it. Entries are stored only in this browser.</p>
       <form id="checkin" novalidate></form>
       <div id="form-msg" role="alert" class="form-msg"></div>
-      <button id="clear-manual" class="link" type="button">Delete my entries</button>
+      <button id="clear-manual" class="link" type="button" data-i18n="clear">Delete my entries</button>
     </section>
   </main>
 
   <footer>
-    <p>Draft explanatory texts are not yet verified against NASA HRP sources. Simulated data uses arbitrary, fictional parameters.
+    <p data-i18n="footer">Draft explanatory texts are not yet verified against NASA HRP sources. Simulated data uses arbitrary, fictional parameters.
        Status levels use configurable statistical cut-offs (|z| ≥ 2 and ≥ 3 relative to your first 7 readings), not clinical thresholds.</p>
   </footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/core.js"></script>
   <script src="js/demo.js"></script>
   <script src="js/content.js"></script>
